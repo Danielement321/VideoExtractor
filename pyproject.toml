@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video-subtitle-extractor"
+version = "0.1.0"
+description = "Extract Chinese hard subtitles from screen-recorded videos into SRT files."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26",
+  "opencv-python>=4.8",
+  "openai>=1.0",
+]
+
+[project.optional-dependencies]
+ocr = [
+  "paddleocr>=2.7",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+video-subtitle-extractor = "video_subtitle_extractor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
