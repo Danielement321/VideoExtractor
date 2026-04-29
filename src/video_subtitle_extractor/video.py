@@ -20,11 +20,12 @@ def find_videos(input_dir: Path) -> list[Path]:
 def crop_bottom_roi(frame: np.ndarray, ratio: float) -> np.ndarray:
     ratio = min(max(ratio, 0.05), 1.0)
     height = frame.shape[0]
-    start_y = int(height * (1.0 - ratio))
+    crop_height = max(int(height * ratio), min(height, 96))
+    start_y = height - crop_height
     return frame[start_y:height, :]
 
 
-def preprocess_for_ocr(frame: np.ndarray) -> np.ndarray:
+def get_video_duration(video_path: Path) -> float:
     try:
         import cv2
     except ImportError as exc:
@@ -32,11 +33,15 @@ def preprocess_for_ocr(frame: np.ndarray) -> np.ndarray:
             "OpenCV is not installed. Install with: python3 -m pip install -e ."
         ) from exc
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    scale = 2.0
-    enlarged = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-    normalized = cv2.equalizeHist(enlarged)
-    return normalized
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise RuntimeError(f"Cannot open video: {video_path}")
+    try:
+        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+        return frame_count / fps if frame_count else 0.0
+    finally:
+        cap.release()
 
 
 def iter_video_samples(
@@ -70,7 +75,7 @@ def iter_video_samples(
             if not ok:
                 break
             roi = crop_bottom_roi(frame, roi_bottom_ratio)
-            yield timestamp, preprocess_for_ocr(roi)
+            yield timestamp, roi
             timestamp += frame_interval
     finally:
         cap.release()

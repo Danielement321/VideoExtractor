@@ -12,6 +12,7 @@ def build_segments(
     similarity_threshold: float,
     min_duration: float,
     max_gap: float,
+    max_end: float | None = None,
 ) -> list[SubtitleSegment]:
     segments: list[SubtitleSegment] = []
     current: SubtitleSegment | None = None
@@ -26,6 +27,8 @@ def build_segments(
 
         sample_start = timestamp
         sample_end = timestamp + frame_interval
+        if max_end is not None and max_end > 0:
+            sample_end = min(sample_end, max_end)
 
         if current is None:
             current = SubtitleSegment(sample_start, sample_end, text, result.confidence)

@@ -14,20 +14,8 @@ dependencies = [
   "openai>=1.0",
 ]
 
-[project.optional-dependencies]
-ocr = [
-  "paddleocr>=2.7",
-]
-dev = [
-  "pytest>=8.0",
-]
-
 [project.scripts]
 video-subtitle-extractor = "video_subtitle_extractor.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["src"]
